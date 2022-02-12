@@ -9,8 +9,8 @@ public class CardList : MonoBehaviour {
 
 	public static CardList Me { get; private set; }
 
-	private const float cardRefWidth = 739f * .2f;
-	private const float cardRefHeight = 1024f * .2f;
+	private const float cardRefWidth = 72.17f;
+	private const float cardRefHeight = 100f;
 
 	private static Vector2 spriteOrigin = new Vector2 (.5f, .5f);
 	
@@ -32,6 +32,18 @@ public class CardList : MonoBehaviour {
 	public Image gridSelected;
 	public Image listSelected;
 	private int curLayout = -1;
+	public GameObject viewTogglesContainer;
+
+	public ScrollRect scrollRect;
+	private float scrollSensInit;
+	private bool prevCtrlHeld;
+
+	private GridLayoutGroup gridLayout;
+	private float zoom = 1f;
+	public float zoomMin = 1f;
+	public float zoomMax = 4f;
+	public float zoomChangeSens = .25f;
+	public float touchZoomSpeed = 0.1f;
 
 	private void Awake () {
 
@@ -39,6 +51,66 @@ public class CardList : MonoBehaviour {
 		ChooseLayout (0);
 		if (Cards.Me.IsLoaded) RebuildList ();
 		else Debug.LogWarning ("cards not ready yet");
+
+		scrollSensInit = scrollRect.scrollSensitivity;
+		gridLayout = gridContainer.GetComponent<GridLayoutGroup> ();
+	}
+
+	private void Update () {
+
+		bool ctrl = Input.GetKey (KeyCode.LeftControl) || Input.GetKey (KeyCode.RightControl) ||
+			Input.GetKey (KeyCode.LeftCommand) || Input.GetKey (KeyCode.RightCommand);
+
+		if (prevCtrlHeld != ctrl) {
+			prevCtrlHeld = ctrl;
+			scrollRect.scrollSensitivity = ctrl ? 0f : scrollSensInit;
+		}
+
+		if (ctrl && curLayout == 0) {
+			
+			if (Input.touchSupported) {
+				// Pinch to zoom
+				if (Input.touchCount == 2) {
+
+					Touch t0 = Input.GetTouch (0), t1 = Input.GetTouch (1);
+
+					Vector2 t0prev = t0.position - t0.deltaPosition,
+						t1prev = t1.position - t1.deltaPosition;
+
+					float oldTouchDistance = Vector2.Distance (t0prev, t1prev);
+					float currentTouchDistance = Vector2.Distance (t0.position, t1.position);
+
+					// get offset value
+					float delta = oldTouchDistance - currentTouchDistance;
+					if (delta != 0f) SetZoom (zoom + delta * touchZoomSpeed);
+				}
+			}
+
+			// scrollwheel
+			float scroll = Input.GetAxisRaw ("Mouse ScrollWheel");
+
+			if (scroll > 0f || Input.GetKeyDown (KeyCode.Equals) || 
+				Input.GetKeyDown (KeyCode.KeypadPlus)) IncreaseZoom ();
+			else if (scroll < 0f || Input.GetKeyDown (KeyCode.Minus) ||
+				Input.GetKeyDown (KeyCode.KeypadMinus)) DecreaseZoom ();
+		}
+	}
+
+	public void IncreaseZoom () {
+		SetZoom (zoom + zoomChangeSens);
+	}
+
+	public void DecreaseZoom () {
+		SetZoom (zoom - zoomChangeSens);
+	}
+
+	private void SetZoom (float val) {
+
+		val = Mathf.Clamp (val, zoomMin, zoomMax);
+		if (zoom == val || curLayout != 0) return;
+		zoom = val;
+
+		gridLayout.cellSize = new Vector2 (cardRefWidth * zoom, cardRefHeight * zoom);
 	}
 
 	public void ChooseLayout (int layout) {
@@ -50,6 +122,7 @@ public class CardList : MonoBehaviour {
 		listContainer.SetActive (curLayout == 1);
 		gridSelected.enabled = curLayout == 0;
 		listSelected.enabled = curLayout == 1;
+		viewTogglesContainer.SetActive (curLayout == 0);
 	}
 
 	private void ClearList () {
