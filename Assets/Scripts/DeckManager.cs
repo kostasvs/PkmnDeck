@@ -21,12 +21,16 @@ public class DeckManager : MonoBehaviour {
 	public readonly List<Deck> decks = new List<Deck> ();
 
 	private Deck deckToRename;
+	private Deck deckToDelete;
 
 	public DialogBox renameDeckDialog;
 	public InputField renameDeckInput;
 	public CanvasGroup renameDeckWarn;
 	private Text renameDeckWarnText;
 	private Sequence renameDeckWarnSeq;
+
+	public DialogBox deleteDeckDialog;
+	public Text deleteDeckText;
 
 	void Awake () {
 
@@ -75,6 +79,7 @@ public class DeckManager : MonoBehaviour {
 		// add to builder list
 		var go = Instantiate (deckListingTemplate, deckListingTemplate.transform.parent);
 		go.SetActive (true);
+		d.listing = go;
 
 		var labels = go.GetComponentsInChildren<Text> ();
 		d.nameLabel = labels[0];
@@ -84,6 +89,7 @@ public class DeckManager : MonoBehaviour {
 
 		var btns = go.GetComponentsInChildren<Button> ();
 		btns[1].onClick.AddListener (() => PromptRenameDeck (d));
+		btns[2].onClick.AddListener (() => PromptDeleteDeck (d));
 
 		return d;
 	}
@@ -94,6 +100,14 @@ public class DeckManager : MonoBehaviour {
 		deckToRename = deck;
 		renameDeckInput.text = deck.Name;
 		renameDeckDialog.OpenMe ();
+	}
+
+	public void PromptDeleteDeck (Deck deck) {
+
+		if (deck == null || deleteDeckDialog.gameObject.activeSelf) return;
+		deckToDelete = deck;
+		deleteDeckText.text = "Delete \"" + deck.Name + "\"? This can't be undone!";
+		deleteDeckDialog.OpenMe ();
 	}
 
 	public void OnEndEditRenameDeck () {
@@ -168,6 +182,16 @@ public class DeckManager : MonoBehaviour {
 		renameDeckWarnSeq.Play ();
 
 		renameDeckWarnText.text = text;
+	}
+
+	public void RequestDeleteDeck () {
+
+		if (deckToDelete == null) return;
+
+		// delete deck
+		Destroy (deckToDelete.listing);
+		decks.Remove (deckToDelete);
+		deleteDeckDialog.CloseMe ();
 	}
 
 	public static void UpdateAllCardsCount () {
