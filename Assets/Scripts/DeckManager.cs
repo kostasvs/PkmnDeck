@@ -14,17 +14,26 @@ public class DeckManager : MonoBehaviour {
 
 	public InputField newDeckNameInput;
 	public CanvasGroup newDeckWarn;
-	private Text newDeckWarningText;
-	public float newDeckWarnDur = 3f;
+	private Text newDeckWarnText;
+	public float warnDur = 3f;
 	private Sequence newDeckWarnSeq;
 
 	public readonly List<Deck> decks = new List<Deck> ();
+
+	private Deck deckToRename;
+
+	public DialogBox renameDeckDialog;
+	public InputField renameDeckInput;
+	public CanvasGroup renameDeckWarn;
+	private Text renameDeckWarnText;
+	private Sequence renameDeckWarnSeq;
 
 	void Awake () {
 
 		Me = this;
 
-		newDeckWarningText = newDeckWarn.GetComponentInChildren<Text> ();
+		newDeckWarnText = newDeckWarn.GetComponentInChildren<Text> ();
+		renameDeckWarnText = renameDeckWarn.GetComponentInChildren<Text> ();
 	}
 
 	public void OnEndEditCreateDeck () {
@@ -73,7 +82,52 @@ public class DeckManager : MonoBehaviour {
 		d.UpdateNameLabel ();
 		d.UpdateCountLabel ();
 
+		var btns = go.GetComponentsInChildren<Button> ();
+		btns[1].onClick.AddListener (() => PromptRenameDeck (d));
+
 		return d;
+	}
+
+	public void PromptRenameDeck (Deck deck) {
+
+		if (deck == null || renameDeckDialog.gameObject.activeSelf) return;
+		deckToRename = deck;
+		renameDeckInput.text = deck.Name;
+		renameDeckDialog.OpenMe ();
+	}
+
+	public void OnEndEditRenameDeck () {
+
+		if (Input.GetKeyDown (KeyCode.Return)) RequestRenameDeck ();
+	}
+
+	public void RequestRenameDeck () {
+
+		if (deckToRename == null) return;
+
+		var dname = renameDeckInput.text.Trim ();
+
+		// check non-empty name
+		if (string.IsNullOrEmpty (dname)) {
+
+			WarnOnRenameDeck ("Please enter a name.");
+			return;
+		}
+
+		// check name doesn't already exist
+		foreach (var d in decks) {
+			if (d == deckToRename) continue;
+			if (d.Name.Equals (dname)) {
+
+				WarnOnRenameDeck ("A deck with this name already exists.");
+				return;
+			}
+		}
+
+		// rename deck
+		deckToRename.Rename (dname);
+		renameDeckInput.text = string.Empty;
+		renameDeckDialog.CloseMe ();
 	}
 
 	private void WarnOnCreateDeck (string text) {
@@ -87,13 +141,33 @@ public class DeckManager : MonoBehaviour {
 		newDeckWarnSeq = DOTween.Sequence ();
 		newDeckWarnSeq.Append (DOTween.To (
 				() => newDeckWarn.alpha, x => newDeckWarn.alpha = x, 1f, DialogBox.fadeDur))
-			.AppendInterval (newDeckWarnDur)
+			.AppendInterval (warnDur)
 			.Append (DOTween.To (
 				() => newDeckWarn.alpha, x => newDeckWarn.alpha = x, 0f, DialogBox.fadeDur))
 			.OnComplete (() => newDeckWarn.gameObject.SetActive (false));
 		newDeckWarnSeq.Play ();
 
-		newDeckWarningText.text = text;
+		newDeckWarnText.text = text;
+	}
+
+	private void WarnOnRenameDeck (string text) {
+
+		if (renameDeckWarnSeq != null && renameDeckWarnSeq.IsActive () && renameDeckWarnSeq.IsPlaying ()) {
+			renameDeckWarnSeq.Complete ();
+		}
+		renameDeckWarn.gameObject.SetActive (true);
+		renameDeckWarn.alpha = 0f;
+
+		renameDeckWarnSeq = DOTween.Sequence ();
+		renameDeckWarnSeq.Append (DOTween.To (
+				() => renameDeckWarn.alpha, x => renameDeckWarn.alpha = x, 1f, DialogBox.fadeDur))
+			.AppendInterval (warnDur)
+			.Append (DOTween.To (
+				() => renameDeckWarn.alpha, x => renameDeckWarn.alpha = x, 0f, DialogBox.fadeDur))
+			.OnComplete (() => renameDeckWarn.gameObject.SetActive (false));
+		renameDeckWarnSeq.Play ();
+
+		renameDeckWarnText.text = text;
 	}
 
 	public static void UpdateAllCardsCount () {
@@ -102,12 +176,11 @@ public class DeckManager : MonoBehaviour {
 		Me.allCardsCount.text = Cards.Me.cards.Length + cardsCountSuffix;
 	}
 
-	[System.Serializable]
 	public class Deck {
 
 		private string name;
 		public string Name => name;
-		public string[] cardIds;
+		public readonly List<string> cardIds = new List<string> ();
 
 		public GameObject listing;
 		public Text nameLabel;
@@ -131,7 +204,7 @@ public class DeckManager : MonoBehaviour {
 
 		public void UpdateCountLabel () {
 
-			if (countLabel) countLabel.text = cardIds.Length + cardsCountSuffix;
+			if (countLabel) countLabel.text = cardIds.Count + cardsCountSuffix;
 		}
 	}
 }
