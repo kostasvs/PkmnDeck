@@ -1,5 +1,6 @@
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class LoadingScreen : MonoBehaviour {
@@ -11,6 +12,7 @@ public class LoadingScreen : MonoBehaviour {
 	private float fadeDelta;
 
 	public Text loadingText;
+	private string loadingTextDef;
 	private RectTransform loadingTextRtr;
 	private Vector2 loadingTextInitPos;
 	public Vector2 textSlide;
@@ -21,11 +23,18 @@ public class LoadingScreen : MonoBehaviour {
 	public float pokeballShadowScale = .75f;
 	public float pokeballAnimDur = .8f;
 
+	public GameObject normalContent;
+	public GameObject errorContent;
+
+	public Button btn;
+
 	void Awake () {
 
 		me = this;
 
 		cg = GetComponent<CanvasGroup> ();
+
+		loadingTextDef = loadingText.text;
 		loadingTextRtr = loadingText.GetComponent<RectTransform> ();
 		loadingTextInitPos = loadingTextRtr.anchoredPosition;
 
@@ -53,6 +62,9 @@ public class LoadingScreen : MonoBehaviour {
 	private void OnEnable () {
 
 		if (cg.alpha == 0f) fadeDelta = 1f;
+
+		HideError ();
+		HideButton ();
 	}
 
 	private void Update () {
@@ -72,6 +84,44 @@ public class LoadingScreen : MonoBehaviour {
 	private void UpdateSlideText () {
 
 		loadingTextRtr.anchoredPosition = loadingTextInitPos + textSlide * (1f - cg.alpha);
+	}
+
+	public static void SetLoadingText (string text) {
+
+		if (!me) return;
+		me.loadingText.text = text;
+	}
+
+	public static void ShowError (string error) {
+
+		if (!me) return;
+		FadeIn ();
+		me.loadingText.text = error;
+		me.normalContent.SetActive (false);
+		me.errorContent.SetActive (true);
+	}
+
+	public static void HideError () {
+
+		if (!me) return;
+		me.loadingText.text = me.loadingTextDef;
+		me.normalContent.SetActive (true);
+		me.errorContent.SetActive (false);
+	}
+
+	public static void ShowButton (UnityAction action, string label) {
+
+		if (!me) return;
+		me.btn.onClick.RemoveAllListeners ();
+		if (action != null) me.btn.onClick.AddListener (action);
+		me.btn.GetComponentInChildren<Text> ().text = label;
+		me.btn.gameObject.SetActive (true);
+	}
+
+	public static void HideButton () {
+
+		if (!me) return;
+		me.btn.gameObject.SetActive (false);
 	}
 
 	public static void FadeIn () {

@@ -13,12 +13,12 @@ public class Globals : MonoBehaviour {
 		DontDestroyOnLoad (gameObject);
 		DOTween.Init ();
 		SceneManager.LoadScene (1);
-		StartCoroutine (LoadData ());
+		//StartCoroutine (LoadData ());
 	}
 
-	private IEnumerator LoadData () {
+	//private IEnumerator LoadData () {
 
-		yield return new WaitForSecondsRealtime (.5f);
-		LoadingScreen.FadeOut ();
-	}
+	//	yield return new WaitForSecondsRealtime (.5f);
+	//	LoadingScreen.FadeOut ();
+	//}
 }
