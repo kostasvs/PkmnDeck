@@ -28,7 +28,10 @@ public class Cards : MonoBehaviour {
 			"&orderBy=number";
 		
 		var www = UnityWebRequest.Get (s);
-		www.SetRequestHeader ("X-Api-Key", Secrets.apiKey);
+		if (string.IsNullOrEmpty (Secrets.apiKey)) {
+			Debug.LogWarning ("No pokemontcg API key provided, requests may be throttled/denied");
+		}
+		else www.SetRequestHeader ("X-Api-Key", Secrets.apiKey);
 
 		yield return www.SendWebRequest ();
 
