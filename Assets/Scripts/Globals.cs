@@ -11,7 +11,7 @@ public class Globals : MonoBehaviour {
 
 		Me = this;
 		DontDestroyOnLoad (gameObject);
-		DOTween.Init ();
+		DOTween.Init ().SetCapacity (250, 125);
 		SceneManager.LoadScene (1);
 		//StartCoroutine (LoadData ());
 	}
