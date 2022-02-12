@@ -941,7 +941,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   urlLoadSet: https://api.pokemontcg.io/v2/cards
-  cardSetId: g1
+  cardSetId: base1
+  cards: []
 --- !u!4 &931830420
 Transform:
   m_ObjectHideFlags: 0
