@@ -69,6 +69,9 @@ public class Cards : MonoBehaviour {
 				StartCoroutine (LoadCards ());
 			}, "Retry");
 		}
+
+		// update cards count
+		DeckManager.UpdateAllCardsCount ();
 	}
 
 	[System.Serializable]
