@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class CardList : MonoBehaviour {
 
@@ -26,11 +27,29 @@ public class CardList : MonoBehaviour {
 
 	public DeckManager.Deck filterDeck;
 
+	public GameObject gridContainer;
+	public GameObject listContainer;
+	public Image gridSelected;
+	public Image listSelected;
+	private int curLayout = -1;
+
 	private void Awake () {
 
 		Me = this;
+		ChooseLayout (0);
 		if (Cards.Me.IsLoaded) RebuildList ();
 		else Debug.LogWarning ("cards not ready yet");
+	}
+
+	public void ChooseLayout (int layout) {
+
+		if (curLayout == layout) return;
+		curLayout = layout;
+
+		gridContainer.SetActive (curLayout == 0);
+		listContainer.SetActive (curLayout == 1);
+		gridSelected.enabled = curLayout == 0;
+		listSelected.enabled = curLayout == 1;
 	}
 
 	private void ClearList () {
@@ -92,9 +111,9 @@ public class CardList : MonoBehaviour {
 		if (!Me.onDownload.TryGetValue (url, out var evt) || evt == null) {
 			evt = new UnityEvent<Sprite> ();
 			Me.onDownload[url] = evt;
+			Me.StartCoroutine (Me.DownloadImage (url));
 		}
 		evt.AddListener (callback);
-		Me.StartCoroutine (Me.DownloadImage (url));
 	}
 
 	private IEnumerator DownloadImage (string url) {

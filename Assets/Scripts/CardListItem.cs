@@ -19,9 +19,14 @@ public class CardListItem : MonoBehaviour {
 		}
 	}
 
+	private void OnDisable () {
+
+		if (seq != null && seq.IsActive () && seq.IsPlaying ()) seq.Complete (true);
+	}
+
 	private void SetImage (Sprite sprite) {
 
-		if (seq == null) {
+		if (seq == null && gameObject.activeInHierarchy) {
 			seq = DOTween.Sequence ();
 			seq.Append (
 				thumbTr.DOScaleX (0f, flipDur).SetEase (Ease.InSine))
