@@ -1,3 +1,4 @@
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,6 +10,7 @@ public class Globals : MonoBehaviour {
 
 		Me = this;
 		DontDestroyOnLoad (gameObject);
+		DOTween.Init ();
 		SceneManager.LoadScene (1);
 	}
 }
