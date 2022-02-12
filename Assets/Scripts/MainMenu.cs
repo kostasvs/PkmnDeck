@@ -13,6 +13,7 @@ public class MainMenu : MonoBehaviour {
 
 		Me = this;
 		myCG = GetComponent<CanvasGroup> ();
+		curCG = myCG;
 	}
 
 	public void RequestShowMenu (CanvasGroup cg) => ShowMenu (cg);
@@ -28,9 +29,12 @@ public class MainMenu : MonoBehaviour {
 			toShow.gameObject.SetActive (true);
 			toShow.alpha = 0f;
 		}
-		DOTween.To (() => toShow.alpha, x => toShow.alpha = x, 1f, fadeDur);
+		toShow.interactable = false;
+		DOTween.To (() => toShow.alpha, x => toShow.alpha = x, 1f, fadeDur)
+			.OnComplete (() => toShow.interactable = true);
 
 		if (toHide) {
+			toHide.interactable = false;
 			DOTween.To (() => toHide.alpha, x => toHide.alpha = x, 0f, fadeDur)
 				.OnComplete (() => toHide.gameObject.SetActive (false));
 		}
