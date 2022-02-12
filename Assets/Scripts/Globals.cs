@@ -16,6 +16,17 @@ public class Globals : MonoBehaviour {
 		//StartCoroutine (LoadData ());
 	}
 
+	private void Update () {
+	
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			int n = DialogBox.openDialogs.Count;
+			if (n > 0) {
+				var dialog = DialogBox.openDialogs[n - 1];
+				if (dialog.closeViaEsc && dialog.Interactable) dialog.CloseMe ();
+			}
+		}
+	}
+
 	//private IEnumerator LoadData () {
 
 	//	yield return new WaitForSecondsRealtime (.5f);

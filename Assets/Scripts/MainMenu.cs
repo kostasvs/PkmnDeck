@@ -7,7 +7,8 @@ public class MainMenu : MonoBehaviour {
 	private CanvasGroup curCG;
 	private CanvasGroup myCG;
 
-	public float fadeDur = .3f;
+	public const float fadeDur = .3f;
+
 	void Awake () {
 
 		Me = this;
@@ -27,10 +28,10 @@ public class MainMenu : MonoBehaviour {
 			toShow.gameObject.SetActive (true);
 			toShow.alpha = 0f;
 		}
-		DOTween.To (() => toShow.alpha, x => toShow.alpha = x, 1f, Me.fadeDur);
+		DOTween.To (() => toShow.alpha, x => toShow.alpha = x, 1f, fadeDur);
 
 		if (toHide) {
-			DOTween.To (() => toHide.alpha, x => toHide.alpha = x, 0f, Me.fadeDur)
+			DOTween.To (() => toHide.alpha, x => toHide.alpha = x, 0f, fadeDur)
 				.OnComplete (() => toHide.gameObject.SetActive (false));
 		}
 
