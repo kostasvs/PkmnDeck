@@ -53,11 +53,12 @@ public class DeckManager : MonoBehaviour {
 
 	public void RequestSetDeck (Deck deck) {
 
-		if (!CardList.Me || CardList.Me.filterDeck == deck) return;
-		CardList.Me.filterDeck = deck;
-
-		curDeckText.text = deck != null ? deck.Name : allCardsText;
-		CardList.Me.UpdateFilters ();
+		if (CardList.Me && CardList.Me.filterDeck != deck) {
+			
+			CardList.Me.filterDeck = deck;
+			curDeckText.text = deck != null ? deck.Name : allCardsText;
+			CardList.Me.UpdateFilters ();
+		}
 		selectDeckDialog.CloseMe ();
 	}
 
@@ -208,16 +209,18 @@ public class DeckManager : MonoBehaviour {
 
 	public void RequestDeleteDeck () {
 
-		if (deckToDelete == null) return;
+		if (deckToDelete != null) {
 
-		// check if currently selected
-		if (CardList.Me && CardList.Me.filterDeck == deckToDelete) {
-			RequestNoDeck ();
+			// check if currently selected
+			if (CardList.Me && CardList.Me.filterDeck == deckToDelete) {
+				RequestNoDeck ();
+			}
+
+			// delete deck
+			Destroy (deckToDelete.listing);
+			decks.Remove (deckToDelete);
 		}
 
-		// delete deck
-		Destroy (deckToDelete.listing);
-		decks.Remove (deckToDelete);
 		deleteDeckDialog.CloseMe ();
 	}
 
