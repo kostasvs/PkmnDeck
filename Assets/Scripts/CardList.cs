@@ -58,6 +58,9 @@ public class CardList : MonoBehaviour {
 	private readonly List<string> foundTypes = new List<string> ();
 	private readonly List<string> foundRarities = new List<string> ();
 
+	public GameObject emptyNotice;
+	public Text filtersNotice;
+
 	private void Awake () {
 
 		Me = this;
@@ -176,6 +179,7 @@ public class CardList : MonoBehaviour {
 
 	public void UpdateFilters () {
 
+		bool atLeastOne = false, atLeastOneFiltered = false;
 		for (int i = 0; i < gridItems.Count; i++) {
 			
 			var gi = gridItems[i];
@@ -183,6 +187,7 @@ public class CardList : MonoBehaviour {
 
 			// deck
 			bool show = filterDeck == null || filterDeck.cardIds.Contains (ci.id);
+			if (show) atLeastOneFiltered = true;
 
 			// supertype
 			if (show && !string.IsNullOrEmpty (filterSupertype)) {
@@ -206,7 +211,14 @@ public class CardList : MonoBehaviour {
 
 			gi.gameObject.SetActive (show);
 			listItems[i].gameObject.SetActive (show);
+			if (show) atLeastOne = true;
 		}
+
+		// show empty notice if no cards shown
+		emptyNotice.SetActive (!atLeastOne);
+
+		// show if cards exist but are filtered
+		filtersNotice.gameObject.SetActive (!atLeastOne && atLeastOneFiltered);
 	}
 
 	public static void GetImage (string url, UnityAction<Sprite> callback) {
