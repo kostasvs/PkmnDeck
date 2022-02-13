@@ -9,6 +9,13 @@ public class DetailedView : MonoBehaviour {
 
 	public RectTransform viewContent;
 
+	public RectTransform boxRtr;
+	public RectTransform cardRtr;
+	private Vector2 boxRtrPosInit;
+	private Vector2 cardRtrPosInit;
+	public Vector3 cardScaleUp = 1.25f * Vector3.one;
+	public float animDur = .3f;
+
 	public Image thumbnail;
 
 	//public GameObject nameLabel;
@@ -39,6 +46,15 @@ public class DetailedView : MonoBehaviour {
 	public GameObject flavorLabel;
 	public Text flavorText;
 
+	private Sequence seq;
+	private bool isScaledUp;
+
+	private void Awake () {
+
+		boxRtrPosInit = boxRtr.anchoredPosition;
+		cardRtrPosInit = cardRtr.anchoredPosition;
+	}
+
 	public void SetImage (Sprite sprite) {
 
 		thumbnail.sprite = sprite;
@@ -49,6 +65,12 @@ public class DetailedView : MonoBehaviour {
 		if (!gameObject.activeSelf) gameObject.SetActive (true);
 		if (!dialog) dialog = GetComponent<DialogBox> ();
 		dialog.OpenMe ();
+
+		// reset rtrs
+		boxRtr.anchoredPosition = boxRtrPosInit;
+		cardRtr.anchoredPosition = cardRtrPosInit;
+		cardRtr.localScale = Vector3.one;
+		isScaledUp = false;
 
 		// reset scroll
 		var p = viewContent.anchoredPosition;
@@ -150,5 +172,22 @@ public class DetailedView : MonoBehaviour {
 		if (info != null && info.images != null) {
 			CardList.GetImage (info.images.large, (s) => SetImage (s));
 		}
+	}
+
+	public void ToggleScaleUp () {
+
+		if (seq != null && seq.IsActive () && seq.IsPlaying ()) return;
+
+		var boxPos = isScaledUp ? boxRtrPosInit : Vector2.zero;
+		var cardPos = isScaledUp ? cardRtrPosInit : Vector2.zero;
+		var cardScale = isScaledUp ? Vector3.one : cardScaleUp;
+
+		seq = DOTween.Sequence ();
+		seq.Append (boxRtr.DOAnchorPos (boxPos, animDur))
+			.Insert (0f, cardRtr.DOAnchorPos (cardPos, animDur))
+			.Insert (0f, cardRtr.DOScale (cardScale, animDur));
+		seq.Play ();
+
+		isScaledUp = !isScaledUp;
 	}
 }
