@@ -29,6 +29,8 @@ public class CardListItem : MonoBehaviour {
 	private const string evolvesTo = "Evolves to ";
 	public const string evolvesSep = ", ";
 
+	public CardListItem siblingItem;
+
 	void Start () {
 
 		thumbTr = thumbnail.transform;

@@ -156,35 +156,40 @@ public class CardList : MonoBehaviour {
 		ClearList ();
 		foreach (var ci in Cards.Me.cards) AddCard (ci);
 		UpdateFilters ();
+		SortCards (FilterSort.sorting);
 	}
 
 	private void AddCard (Cards.CardInfo info) {
 
 		// grid
 		var go = Instantiate (gridItemTemplate.gameObject, gridItemTemplate.transform.parent);
-		var cli = go.GetComponent<CardListItem> ();
-		cli.info = info;
-		gridItems.Add (cli);
+		var cli1 = go.GetComponent<CardListItem> ();
+		cli1.info = info;
+		gridItems.Add (cli1);
 		go.SetActive (true);
 
 		var btn = go.GetComponent<Button> ();
 		btn.onClick.AddListener (() => {
-			detailedView.SetImage (cli.thumbnail.sprite);
+			detailedView.SetImage (cli1.thumbnail.sprite);
 			detailedView.ShowInfo (info);
 		});
 
 		// list
 		go = Instantiate (listItemTemplate.gameObject, listItemTemplate.transform.parent);
-		cli = go.GetComponent<CardListItem> ();
-		cli.info = info;
-		listItems.Add (cli);
+		var cli2 = go.GetComponent<CardListItem> ();
+		cli2.info = info;
+		listItems.Add (cli2);
 		go.SetActive (true);
 
 		btn = go.GetComponent<Button> ();
 		btn.onClick.AddListener (() => {
-			detailedView.SetImage (cli.thumbnail.sprite);
+			detailedView.SetImage (cli2.thumbnail.sprite);
 			detailedView.ShowInfo (info);
 		});
+
+		// set siblings
+		cli1.siblingItem = cli2;
+		cli2.siblingItem = cli1;
 	}
 
 	public void UpdateFilters () {
@@ -222,7 +227,7 @@ public class CardList : MonoBehaviour {
 			}
 
 			gi.gameObject.SetActive (show);
-			listItems[i].gameObject.SetActive (show);
+			gi.siblingItem.gameObject.SetActive (show);
 			if (show) atLeastOne = true;
 		}
 
@@ -231,6 +236,114 @@ public class CardList : MonoBehaviour {
 
 		// show if cards exist but are filtered
 		filtersNotice.gameObject.SetActive (!atLeastOne && atLeastOneFiltered);
+	}
+
+	public void SortCards (int mode) {
+
+		System.Comparison<CardListItem> comparer = null;
+		switch (mode) {
+
+			// name
+			case 0:
+				comparer = (x, y) => {
+					var x1 = x.info.name ?? string.Empty;
+					var y1 = y.info.name ?? string.Empty;
+					
+					int comp = x1.CompareTo (y1);
+					if (comp != 0) return comp;
+					return (x.info.id ?? string.Empty).CompareTo (y.info.id ?? string.Empty);
+				};
+				break;
+
+			// supertype
+			case 1:
+				comparer = (x, y) => {
+					var x1 = x.info.supertype ?? string.Empty;
+					var y1 = y.info.supertype ?? string.Empty;
+
+					int comp = x1.CompareTo (y1);
+					if (comp != 0) return comp;
+					return (x.info.id ?? string.Empty).CompareTo (y.info.id ?? string.Empty);
+				};
+				break;
+
+			// subtype
+			case 2:
+				comparer = (x, y) => {
+					var arr = x.info.subtypes;
+					var x1 = arr != null && arr.Length > 0 ? (arr[0] ?? string.Empty) : string.Empty;
+					arr = y.info.subtypes;
+					var y1 = arr != null && arr.Length > 0 ? (arr[0] ?? string.Empty) : string.Empty;
+
+					int comp = x1.CompareTo (y1);
+					if (comp != 0) return comp;
+					return (x.info.id ?? string.Empty).CompareTo (y.info.id ?? string.Empty);
+				};
+				break;
+
+			// type
+			case 3:
+				comparer = (x, y) => {
+					var arr = x.info.types;
+					var x1 = arr != null && arr.Length > 0 ? (arr[0] ?? string.Empty) : string.Empty;
+					arr = y.info.types;
+					var y1 = arr != null && arr.Length > 0 ? (arr[0] ?? string.Empty) : string.Empty;
+
+					int comp = x1.CompareTo (y1);
+					if (comp != 0) return comp;
+					return (x.info.id ?? string.Empty).CompareTo (y.info.id ?? string.Empty);
+				};
+				break;
+
+			// hp
+			case 4:
+				comparer = (x, y) => {
+					var x1 = x.info.hp > 0 ? x.info.hp : int.MaxValue;
+					var y1 = y.info.hp > 0 ? y.info.hp : int.MaxValue;
+
+					int comp = x1.CompareTo (y1);
+					if (comp != 0) return comp;
+					return (x.info.id ?? string.Empty).CompareTo (y.info.id ?? string.Empty);
+				};
+				break;
+
+			// rarity
+			case 5:
+				comparer = (x, y) => {
+					var s = x.info.rarity ?? string.Empty;
+					int x1 = System.Array.IndexOf (FilterSort.raritySort, s);
+					s = y.info.rarity ?? string.Empty;
+					int y1 = System.Array.IndexOf (FilterSort.raritySort, s);
+
+					int comp = y1.CompareTo (x1);
+					if (comp != 0) return comp;
+					return (x.info.id ?? string.Empty).CompareTo (y.info.id ?? string.Empty);
+				};
+				break;
+
+			// pokedex number
+			default:
+				comparer = (x, y) => {
+					var arr = x.info.nationalPokedexNumbers;
+					var x1 = arr != null && arr.Length > 0 ? arr[0] : int.MaxValue;
+					arr = y.info.nationalPokedexNumbers;
+					var y1 = arr != null && arr.Length > 0 ? arr[0] : int.MaxValue;
+
+					int comp = x1.CompareTo (y1);
+					if (comp != 0) return comp;
+					return (x.info.id ?? string.Empty).CompareTo (y.info.id ?? string.Empty);
+				};
+				break;
+		}
+
+		// perform sort
+		listItems.Sort (comparer);
+
+		// sort transform items
+		foreach (var i in listItems) {
+			i.transform.SetAsLastSibling ();
+			i.siblingItem.transform.SetAsLastSibling ();
+		}
 	}
 
 	public static void GetImage (string url, UnityAction<Sprite> callback) {

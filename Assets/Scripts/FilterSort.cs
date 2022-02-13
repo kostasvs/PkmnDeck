@@ -15,10 +15,93 @@ public class FilterSort : MonoBehaviour {
 	public ButtonList typeList;
 	public ButtonList rarityList;
 
+	public ButtonList sortList;
+	public static int sorting = -1;
+
+	public static readonly string[] raritySort = new string[] {
+		"Rare Holo",
+		"Rare",
+		"Uncommon",
+		"Common",
+		"",
+	};
+
 	void Awake () {
 
 		Me = this;
 		filterInitCol = filterIcon.color;
+
+		// sort dex number
+		var bm1 = sortList.AddButton ("Pokedex number");
+		bm1.SetAction (() => {
+
+			if (bm1.IsSelected ()) return;
+			bm1.SetSelectedExclusive (true);
+			SetSortType (-1);
+		});
+		// set as default sort
+		bm1.SetSelected (true);
+
+		// sort name
+		var b0 = sortList.AddButton ("Name");
+		b0.SetAction (() => {
+
+			if (b0.IsSelected ()) return;
+			b0.SetSelectedExclusive (true);
+			SetSortType (0);
+		});
+
+		// sort supertype
+		var b1 = sortList.AddButton ("Supertype");
+		b1.SetAction (() => {
+
+			if (b1.IsSelected ()) return;
+			b1.SetSelectedExclusive (true);
+			SetSortType (1);
+		});
+
+		// sort subtype
+		var b2 = sortList.AddButton ("Subtype");
+		b2.SetAction (() => {
+
+			if (b2.IsSelected ()) return;
+			b2.SetSelectedExclusive (true);
+			SetSortType (2);
+		});
+
+		// sort type
+		var b3 = sortList.AddButton ("Type");
+		b3.SetAction (() => {
+
+			if (b3.IsSelected ()) return;
+			b3.SetSelectedExclusive (true);
+			SetSortType (3);
+		});
+
+		// sort hp
+		var b4 = sortList.AddButton ("HP");
+		b4.SetAction (() => {
+
+			if (b4.IsSelected ()) return;
+			b4.SetSelectedExclusive (true);
+			SetSortType (4);
+		});
+
+		// sort rarity
+		var b5 = sortList.AddButton ("Rarity");
+		b5.SetAction (() => {
+
+			if (b5.IsSelected ()) return;
+			b5.SetSelectedExclusive (true);
+			SetSortType (5);
+		});
+	}
+
+	public void SetSortType (int sort) {
+
+		if (sorting == sort) return;
+		sorting = sort;
+		if (CardList.Me) CardList.Me.SortCards (sorting);
 	}
 
 	public static void CreateMenus () {
