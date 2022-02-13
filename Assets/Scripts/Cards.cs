@@ -49,6 +49,7 @@ public class Cards : MonoBehaviour {
 				}
 				cards = data.data;
 				IsLoaded = true;
+				FilterSort.CreateMenus ();
 				LoadingScreen.FadeOut ();
 			}
 			catch (System.Exception e) {

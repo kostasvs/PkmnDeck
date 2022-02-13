@@ -48,15 +48,10 @@ public class CardList : MonoBehaviour {
 	public Color[] knownTypeFG;
 
 	public DeckManager.Deck filterDeck;
-	private string filterSupertype;
-	private string filterSubtype;
-	private string filterType;
-	private string filterRarity;
-
-	private readonly List<string> foundSupertypes = new List<string> ();
-	private readonly List<string> foundSubtypes = new List<string> ();
-	private readonly List<string> foundTypes = new List<string> ();
-	private readonly List<string> foundRarities = new List<string> ();
+	public string filterSupertype;
+	public string filterSubtype;
+	public string filterType;
+	public string filterRarity;
 
 	public GameObject emptyNotice;
 	public Text filtersNotice;
@@ -216,12 +211,14 @@ public class CardList : MonoBehaviour {
 
 			// subtype
 			if (show && !string.IsNullOrEmpty (filterSubtype)) {
-				show = System.Array.IndexOf (ci.subtypes, filterSubtype) != -1;
+				show = ci.subtypes != null && 
+					System.Array.IndexOf (ci.subtypes, filterSubtype) != -1;
 			}
 
 			// type
 			if (show && !string.IsNullOrEmpty (filterType)) {
-				show = System.Array.IndexOf (ci.types, filterType) != -1;
+				show = ci.types != null && 
+					System.Array.IndexOf (ci.types, filterType) != -1;
 			}
 
 			gi.gameObject.SetActive (show);
