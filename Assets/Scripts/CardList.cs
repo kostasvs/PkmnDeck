@@ -45,6 +45,10 @@ public class CardList : MonoBehaviour {
 	public float zoomChangeSens = .25f;
 	public float touchZoomSpeed = 0.1f;
 
+	public string[] knownTypes;
+	public Color[] knownTypeBG;
+	public Color[] knownTypeFG;
+
 	private void Awake () {
 
 		Me = this;
