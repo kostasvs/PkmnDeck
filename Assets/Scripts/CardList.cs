@@ -41,7 +41,7 @@ public class CardList : MonoBehaviour {
 	public float zoomMin = 1f;
 	public float zoomMax = 4f;
 	public float zoomChangeSens = .25f;
-	public float touchZoomSpeed = 0.1f;
+	public float touchZoomSens = -0.002f;
 
 	public string[] knownTypes;
 	public Color[] knownTypeBG;
@@ -82,26 +82,27 @@ public class CardList : MonoBehaviour {
 			scrollRect.scrollSensitivity = ctrl ? 0f : scrollSensInit;
 		}
 
-		if (ctrl && curLayout == 0) {
-			
-			if (Input.touchSupported) {
-				// Pinch to zoom
-				if (Input.touchCount == 2) {
+		if (curLayout != 0) return;
 
-					Touch t0 = Input.GetTouch (0), t1 = Input.GetTouch (1);
+		if (Input.touchSupported) {
+			// Pinch to zoom
+			if (Input.touchCount == 2) {
 
-					Vector2 t0prev = t0.position - t0.deltaPosition,
-						t1prev = t1.position - t1.deltaPosition;
+				Touch t0 = Input.GetTouch (0), t1 = Input.GetTouch (1);
 
-					float oldTouchDistance = Vector2.Distance (t0prev, t1prev);
-					float currentTouchDistance = Vector2.Distance (t0.position, t1.position);
+				Vector2 t0prev = t0.position - t0.deltaPosition,
+					t1prev = t1.position - t1.deltaPosition;
 
-					// get offset value
-					float delta = oldTouchDistance - currentTouchDistance;
-					if (delta != 0f) SetZoom (zoom + delta * touchZoomSpeed);
-				}
+				float oldTouchDistance = Vector2.Distance (t0prev, t1prev);
+				float currentTouchDistance = Vector2.Distance (t0.position, t1.position);
+
+				// get offset value
+				float delta = oldTouchDistance - currentTouchDistance;
+				if (delta != 0f) SetZoom (zoom + delta * touchZoomSens);
 			}
+		}
 
+		if (ctrl) {
 			// scrollwheel
 			float scroll = Input.GetAxisRaw ("Mouse ScrollWheel");
 
