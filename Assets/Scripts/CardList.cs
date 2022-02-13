@@ -18,6 +18,7 @@ public class CardList : MonoBehaviour {
 		new Dictionary<string, Sprite> ();
 	private readonly Dictionary<string, UnityEvent<Sprite>> onDownload = 
 		new Dictionary<string, UnityEvent<Sprite>> ();
+	public static string callbackImageUrl = string.Empty;
 
 	public CardListItem gridItemTemplate;
 	public CardListItem listItemTemplate;
@@ -352,6 +353,7 @@ public class CardList : MonoBehaviour {
 
 		// check cache
 		if (imageCache.TryGetValue (url, out var sprite)) {
+			callbackImageUrl = url;
 			callback.Invoke (sprite);
 			return;
 		}
@@ -389,6 +391,7 @@ public class CardList : MonoBehaviour {
 
 				// invoke callbacks
 				if (onDownload.TryGetValue (url, out var evt) && evt != null) {
+					callbackImageUrl = url;
 					evt.Invoke (sprite);
 					evt.RemoveAllListeners ();
 					onDownload.Remove (url);

@@ -49,6 +49,8 @@ public class DetailedView : MonoBehaviour {
 	private Sequence seq;
 	private bool isScaledUp;
 
+	private string lastImageUrl;
+
 	private void Awake () {
 
 		boxRtrPosInit = boxRtr.anchoredPosition;
@@ -170,7 +172,10 @@ public class DetailedView : MonoBehaviour {
 
 		// get HD image
 		if (info != null && info.images != null) {
-			CardList.GetImage (info.images.large, (s) => SetImage (s));
+			lastImageUrl = info.images.large;
+			CardList.GetImage (info.images.large, (s) => {
+				if (lastImageUrl.Equals (CardList.callbackImageUrl)) SetImage (s);
+			});
 		}
 	}
 
