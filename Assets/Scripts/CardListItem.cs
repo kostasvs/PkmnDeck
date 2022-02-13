@@ -13,10 +13,10 @@ public class CardListItem : MonoBehaviour {
 
 	public bool isDetailed;
 	public Text dexNumberText;
-	private const string dexNumberPrefix = "#";
+	public const string dexNumberPrefix = "#";
 	public Text titleText;
 	public Text hpText;
-	private const string hpSuffix = " HP";
+	public const string hpSuffix = " HP";
 	public Image hpSep;
 	public Text rarityText;
 	public Image raritySep;
@@ -27,7 +27,7 @@ public class CardListItem : MonoBehaviour {
 	public GameObject evolvesTemplate;
 	private const string evolvesFrom = "Evolves from ";
 	private const string evolvesTo = "Evolves to ";
-	private const string evolvesSep = ", ";
+	public const string evolvesSep = ", ";
 
 	void Start () {
 

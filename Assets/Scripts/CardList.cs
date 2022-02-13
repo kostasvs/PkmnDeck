@@ -61,6 +61,8 @@ public class CardList : MonoBehaviour {
 	public GameObject emptyNotice;
 	public Text filtersNotice;
 
+	public DetailedView detailedView;
+
 	private void Awake () {
 
 		Me = this;
@@ -170,12 +172,24 @@ public class CardList : MonoBehaviour {
 		gridItems.Add (cli);
 		go.SetActive (true);
 
+		var btn = go.GetComponent<Button> ();
+		btn.onClick.AddListener (() => {
+			detailedView.SetImage (cli.thumbnail.sprite);
+			detailedView.ShowInfo (info);
+		});
+
 		// list
 		go = Instantiate (listItemTemplate.gameObject, listItemTemplate.transform.parent);
 		cli = go.GetComponent<CardListItem> ();
 		cli.info = info;
 		listItems.Add (cli);
 		go.SetActive (true);
+
+		btn = go.GetComponent<Button> ();
+		btn.onClick.AddListener (() => {
+			detailedView.SetImage (cli.thumbnail.sprite);
+			detailedView.ShowInfo (info);
+		});
 	}
 
 	public void UpdateFilters () {
