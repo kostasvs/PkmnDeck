@@ -25,8 +25,6 @@ public class CardList : MonoBehaviour {
 	private readonly List<CardListItem> gridItems = new List<CardListItem> ();
 	private readonly List<CardListItem> listItems = new List<CardListItem> ();
 
-	public DeckManager.Deck filterDeck;
-
 	public GameObject gridContainer;
 	public GameObject listContainer;
 	public Image gridSelected;
@@ -48,6 +46,17 @@ public class CardList : MonoBehaviour {
 	public string[] knownTypes;
 	public Color[] knownTypeBG;
 	public Color[] knownTypeFG;
+
+	public DeckManager.Deck filterDeck;
+	private string filterSupertype;
+	private string filterSubtype;
+	private string filterType;
+	private string filterRarity;
+
+	private readonly List<string> foundSupertypes = new List<string> ();
+	private readonly List<string> foundSubtypes = new List<string> ();
+	private readonly List<string> foundTypes = new List<string> ();
+	private readonly List<string> foundRarities = new List<string> ();
 
 	private void Awake () {
 
@@ -144,15 +153,8 @@ public class CardList : MonoBehaviour {
 	private void RebuildList () {
 
 		ClearList ();
-
-		foreach (var ci in Cards.Me.cards) {
-
-			// deck filter
-			if (filterDeck != null && !filterDeck.cardIds.Contains (ci.id)) continue;
-
-			// add card
-			AddCard (ci);
-		}
+		foreach (var ci in Cards.Me.cards) AddCard (ci);
+		UpdateFilters ();
 	}
 
 	private void AddCard (Cards.CardInfo info) {
@@ -168,8 +170,43 @@ public class CardList : MonoBehaviour {
 		go = Instantiate (listItemTemplate.gameObject, listItemTemplate.transform.parent);
 		cli = go.GetComponent<CardListItem> ();
 		cli.info = info;
-		gridItems.Add (cli);
+		listItems.Add (cli);
 		go.SetActive (true);
+	}
+
+	public void UpdateFilters () {
+
+		for (int i = 0; i < gridItems.Count; i++) {
+			
+			var gi = gridItems[i];
+			var ci = gi.info;
+
+			// deck
+			bool show = filterDeck == null || filterDeck.cardIds.Contains (ci.id);
+
+			// supertype
+			if (show && !string.IsNullOrEmpty (filterSupertype)) {
+				show = filterSupertype.Equals (ci.supertype);
+			}
+
+			// rarity
+			if (show && !string.IsNullOrEmpty (filterRarity)) {
+				show = filterRarity.Equals (ci.rarity);
+			}
+
+			// subtype
+			if (show && !string.IsNullOrEmpty (filterSubtype)) {
+				show = System.Array.IndexOf (ci.subtypes, filterSubtype) != -1;
+			}
+
+			// type
+			if (show && !string.IsNullOrEmpty (filterType)) {
+				show = System.Array.IndexOf (ci.types, filterType) != -1;
+			}
+
+			gi.gameObject.SetActive (show);
+			listItems[i].gameObject.SetActive (show);
+		}
 	}
 
 	public static void GetImage (string url, UnityAction<Sprite> callback) {

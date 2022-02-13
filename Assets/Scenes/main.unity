@@ -1585,6 +1585,17 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &310869950 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 719983409574590616, guid: be7936083dcdd524598ba691f45f722a, type: 3}
+  m_PrefabInstance: {fileID: 482573000}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &363193887 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 719983409439617143, guid: be7936083dcdd524598ba691f45f722a, type: 3}
@@ -4074,6 +4085,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0882ff6b7b475be43887dfde46936b1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  curDeckText: {fileID: 310869950}
+  selectDeckDialog: {fileID: 3472205530555069734}
   allCardsCount: {fileID: 957839153}
   deckListingTemplate: {fileID: 2105979717}
   newDeckNameInput: {fileID: 6629921430385027464}
@@ -4973,6 +4986,34 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 671336318}
     m_Modifications:
+    - target: {fileID: 719983409439617097, guid: be7936083dcdd524598ba691f45f722a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 719983409439617097, guid: be7936083dcdd524598ba691f45f722a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 719983409439617097, guid: be7936083dcdd524598ba691f45f722a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 931830421}
+    - target: {fileID: 719983409439617097, guid: be7936083dcdd524598ba691f45f722a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 719983409439617097, guid: be7936083dcdd524598ba691f45f722a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: RequestNoDeck
+      objectReference: {fileID: 0}
+    - target: {fileID: 719983409439617097, guid: be7936083dcdd524598ba691f45f722a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: DeckManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 719983409439617097, guid: be7936083dcdd524598ba691f45f722a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 719983409439617098, guid: be7936083dcdd524598ba691f45f722a, type: 3}
       propertyPath: m_Color.b
       value: 0.4509804

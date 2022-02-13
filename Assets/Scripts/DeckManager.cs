@@ -7,6 +7,11 @@ public class DeckManager : MonoBehaviour {
 
 	public static DeckManager Me { get; private set; }
 
+	public Text curDeckText;
+	private string allCardsText;
+
+	public DialogBox selectDeckDialog;
+
 	public Text allCardsCount;
 	private const string cardsCountSuffix = " cards";
 
@@ -36,8 +41,24 @@ public class DeckManager : MonoBehaviour {
 
 		Me = this;
 
+		allCardsText = curDeckText.text;
+
 		newDeckWarnText = newDeckWarn.GetComponentInChildren<Text> ();
 		renameDeckWarnText = renameDeckWarn.GetComponentInChildren<Text> ();
+	}
+
+	public void RequestNoDeck () {
+		RequestSetDeck (null);
+	}
+
+	public void RequestSetDeck (Deck deck) {
+
+		if (!CardList.Me || CardList.Me.filterDeck == deck) return;
+		CardList.Me.filterDeck = deck;
+
+		curDeckText.text = deck != null ? deck.Name : allCardsText;
+		CardList.Me.UpdateFilters ();
+		selectDeckDialog.CloseMe ();
 	}
 
 	public void OnEndEditCreateDeck () {
@@ -88,6 +109,7 @@ public class DeckManager : MonoBehaviour {
 		d.UpdateCountLabel ();
 
 		var btns = go.GetComponentsInChildren<Button> ();
+		btns[0].onClick.AddListener (() => RequestSetDeck (d));
 		btns[1].onClick.AddListener (() => PromptRenameDeck (d));
 		btns[2].onClick.AddListener (() => PromptDeleteDeck (d));
 
@@ -188,6 +210,11 @@ public class DeckManager : MonoBehaviour {
 
 		if (deckToDelete == null) return;
 
+		// check if currently selected
+		if (CardList.Me && CardList.Me.filterDeck == deckToDelete) {
+			RequestNoDeck ();
+		}
+
 		// delete deck
 		Destroy (deckToDelete.listing);
 		decks.Remove (deckToDelete);
@@ -219,6 +246,9 @@ public class DeckManager : MonoBehaviour {
 
 			this.name = name;
 			UpdateNameLabel ();
+			if (CardList.Me && CardList.Me.filterDeck == this) {
+				Me.curDeckText.text = name;
+			}
 		}
 
 		public void UpdateNameLabel () {
