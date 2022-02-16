@@ -66,7 +66,6 @@ public class DetailedView : MonoBehaviour {
 
 	public void ShowInfo (Cards.CardInfo info) {
 
-		if (!gameObject.activeSelf) gameObject.SetActive (true);
 		if (!dialog) dialog = GetComponent<DialogBox> ();
 		dialog.OpenMe ();
 

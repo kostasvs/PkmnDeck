@@ -1,8 +1,9 @@
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class CardListItem : MonoBehaviour {
+public class CardListItem : MonoBehaviour, IPointerDownHandler {
 
 	public Cards.CardInfo info;
 
@@ -10,6 +11,10 @@ public class CardListItem : MonoBehaviour {
 	private Transform thumbTr;
 	private Sequence seq;
 	private const float flipDur = .25f;
+
+	public GameObject selectedOverlay;
+	private float pressTime = 0f;
+	private const float longPressDur = .5f;
 
 	public bool isDetailed;
 	public Text dexNumberText;
@@ -121,7 +126,24 @@ public class CardListItem : MonoBehaviour {
 
 	private void OnDisable () {
 
+		pressTime = 0f;
+		SetSelected (false);
 		if (seq != null && seq.IsActive () && seq.IsPlaying ()) seq.Complete (true);
+	}
+
+	public void HandleClick () {
+
+		if (info == null || !CardList.Me) return;
+
+		bool quickSelect = pressTime > 0f && pressTime < Time.time - longPressDur;
+		if (quickSelect || DeckManager.Me.selectMode) {
+			ToggleSelected ();
+		}
+		else {
+			CardList.Me.detailedView.SetImage (thumbnail.sprite);
+			CardList.Me.detailedView.ShowInfo (info);
+		}
+		pressTime = 0f;
 	}
 
 	private void SetImage (Sprite sprite) {
@@ -138,5 +160,27 @@ public class CardListItem : MonoBehaviour {
 		else {
 			thumbnail.sprite = sprite;
 		}
+	}
+
+	public void ToggleSelected () {
+		SetSelected (!selectedOverlay.activeSelf);
+	}
+
+	public void SetSelected (bool state) {
+
+		if (selectedOverlay.activeSelf == state) return;
+
+		if (state && !DeckManager.Me.selectMode) {
+			DeckManager.Me.ToggleSelectMode ();
+		}
+		selectedOverlay.SetActive (state);
+		DeckManager.Me.UpdateSelectionCount ();
+	}
+
+	public bool IsSelected => selectedOverlay.activeSelf;
+
+	public void OnPointerDown (PointerEventData eventData) {
+
+		pressTime = Time.time;
 	}
 }

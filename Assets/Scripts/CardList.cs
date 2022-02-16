@@ -23,9 +23,9 @@ public class CardList : MonoBehaviour {
 
 	public CardListItem gridItemTemplate;
 	public CardListItem listItemTemplate;
-	
-	private readonly List<CardListItem> gridItems = new List<CardListItem> ();
-	private readonly List<CardListItem> listItems = new List<CardListItem> ();
+
+	public readonly List<CardListItem> gridItems = new List<CardListItem> ();
+	public readonly List<CardListItem> listItems = new List<CardListItem> ();
 
 	public GameObject gridContainer;
 	public GameObject listContainer;
@@ -170,24 +170,12 @@ public class CardList : MonoBehaviour {
 		gridItems.Add (cli1);
 		go.SetActive (true);
 
-		var btn = go.GetComponent<Button> ();
-		btn.onClick.AddListener (() => {
-			detailedView.SetImage (cli1.thumbnail.sprite);
-			detailedView.ShowInfo (info);
-		});
-
 		// list
 		go = Instantiate (listItemTemplate.gameObject, listItemTemplate.transform.parent);
 		var cli2 = go.GetComponent<CardListItem> ();
 		cli2.info = info;
 		listItems.Add (cli2);
 		go.SetActive (true);
-
-		btn = go.GetComponent<Button> ();
-		btn.onClick.AddListener (() => {
-			detailedView.SetImage (cli2.thumbnail.sprite);
-			detailedView.ShowInfo (info);
-		});
 
 		// set siblings
 		cli1.siblingItem = cli2;
@@ -276,6 +264,9 @@ public class CardList : MonoBehaviour {
 
 		// show if cards exist but are filtered
 		filtersNotice.gameObject.SetActive (!atLeastOne && atLeastOneFiltered);
+
+		// update selected count
+		if (DeckManager.Me.selectMode) DeckManager.Me.UpdateSelectionCount ();
 	}
 
 	public void SortCards (int mode) {

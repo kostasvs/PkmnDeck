@@ -50,6 +50,16 @@ public class DeckManager : MonoBehaviour {
 	public DialogBox transferDeckDialog;
 	public DialogBox transferConfirmDialog;
 
+	public bool selectMode { get; private set; }
+	public GameObject toolbar;
+	public GameObject selectBar;
+	public Text selectBarText;
+	private const string cardSelectionSingular = "1 card selected";
+	private const string cardSelectionSuffix = " cards selected";
+	
+	public Button drawerAddButton;
+	public Button drawerRemoveButton;
+
 	void Awake () {
 
 		Me = this;
@@ -378,5 +388,93 @@ public class DeckManager : MonoBehaviour {
 		deckToTransferTo = null;
 		transferDeckDialog.CloseMe ();
 		transferConfirmDialog.CloseMe ();
+	}
+
+	public void ToggleSelectMode () {
+		SetSelectMode (!selectMode);
+	}
+
+	public void SetSelectMode (bool state) {
+
+		if (selectMode == state) return;
+		selectMode = state;
+		if (!selectMode) {
+			SelectAllCards (false);
+		}
+
+		toolbar.SetActive (!state);
+		selectBar.SetActive (state);
+	}
+
+	public void UpdateSelectionCount () {
+
+		int cnt = 0;
+		var container = CardList.Me.gridContainer.activeSelf ?
+			CardList.Me.gridItems : CardList.Me.listItems;
+		foreach (var c in container) {
+			if (c.IsSelected) cnt++;
+		}
+
+		selectBarText.text = cnt == 1 ? cardSelectionSingular : cnt + cardSelectionSuffix;
+
+		drawerAddButton.gameObject.SetActive (cnt > 0);
+		drawerRemoveButton.gameObject.SetActive (cnt > 0 && CardList.Me.filterDeck != null);
+	}
+
+	public void SelectAllCards (bool select) {
+
+		if (select) SetSelectMode (true);
+		var container = CardList.Me.gridContainer.activeSelf ?
+			CardList.Me.gridItems : CardList.Me.listItems;
+		foreach (var c in container) {
+			if (c.gameObject.activeInHierarchy) c.SetSelected (select);
+		}
+
+		UpdateSelectionCount ();
+	}
+
+	public void PromptTransferSelected () {
+
+		var container = CardList.Me.gridContainer.activeSelf ?
+			CardList.Me.gridItems : CardList.Me.listItems;
+		var markSel = new List<Cards.CardInfo> ();
+
+		foreach (var c in container) {
+			if (!c.IsSelected) continue;
+			markSel.Add (c.info);
+		}
+
+		cardsToTransfer = markSel.ToArray ();
+		PromptTransfer ();
+	}
+
+	public void RemoveSelectedFromDeck () {
+
+		if (CardList.Me.filterDeck == null) return;
+
+		var deck = CardList.Me.filterDeck;
+		var container = CardList.Me.gridContainer.activeSelf ?
+			CardList.Me.gridItems : CardList.Me.listItems;
+
+		string remName = string.Empty;
+		int cnt = 0;
+		foreach (var c in container) {
+			if (!c.IsSelected) continue;
+			if (cnt == 0) remName = c.info.name;
+			cnt++;
+			deck.cardIds.Remove (c.info.id);
+		}
+
+		CardList.Me.CreateDuplicates ();
+		CardList.Me.UpdateFilters ();
+		deck.UpdateCountLabel ();
+		SetSelectMode (false);
+		
+		if (cnt == 1) {
+			NotifToast.ShowToast ("Removed \"" + remName + "\" from deck \"" +
+				deck.Name + "\".");
+		}
+		else NotifToast.ShowToast ("Removed " + cnt + " cards from deck \"" +
+				deck.Name + "\".");
 	}
 }
