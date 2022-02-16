@@ -60,6 +60,9 @@ public class CardList : MonoBehaviour {
 
 	public DetailedView detailedView;
 
+	public int maxConcurrent = 5;
+	private int curConcurrent;
+
 	private void Awake () {
 
 		Me = this;
@@ -401,9 +404,15 @@ public class CardList : MonoBehaviour {
 
 	private IEnumerator DownloadImage (string url) {
 
+		// wait until queue not full
+		while (curConcurrent >= maxConcurrent) yield return null;
+
 		// download image
 		using (var uwr = UnityWebRequestTexture.GetTexture (url)) {
+
+			curConcurrent++;
 			yield return uwr.SendWebRequest ();
+			curConcurrent--;
 
 			if (uwr.result != UnityWebRequest.Result.Success) {
 				Debug.LogWarning (uwr.error);
