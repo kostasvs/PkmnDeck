@@ -51,6 +51,8 @@ public class DetailedView : MonoBehaviour {
 
 	private string lastImageUrl;
 
+	public Button transferButton;
+
 	private void Awake () {
 
 		boxRtrPosInit = boxRtr.anchoredPosition;
@@ -92,7 +94,7 @@ public class DetailedView : MonoBehaviour {
 
 		// hp
 		bool hasHP = info.hp > 0;
-		hpLabel.gameObject.SetActive (hasHP);
+		hpLabel.SetActive (hasHP);
 		hpText.gameObject.SetActive (hasHP);
 		if (hasHP) {
 			hpText.text = info.hp + CardListItem.hpSuffix;
@@ -100,7 +102,7 @@ public class DetailedView : MonoBehaviour {
 
 		// rarity
 		bool hasRarity = !string.IsNullOrEmpty (info.rarity);
-		rarityLabel.gameObject.SetActive (hasRarity);
+		rarityLabel.SetActive (hasRarity);
 		rarityText.gameObject.SetActive (hasRarity);
 		if (hasRarity) {
 			rarityText.text = info.rarity;
@@ -140,7 +142,7 @@ public class DetailedView : MonoBehaviour {
 
 		// evolves From
 		bool hasFrom = !string.IsNullOrEmpty (info.evolvesFrom);
-		evFromLabel.gameObject.SetActive (hasFrom);
+		evFromLabel.SetActive (hasFrom);
 		evFromText.gameObject.SetActive (hasFrom);
 		if (hasFrom) {
 			evFromText.text = info.evolvesFrom;
@@ -148,7 +150,7 @@ public class DetailedView : MonoBehaviour {
 
 		// evolves To
 		bool hasTo = info.evolvesTo != null && info.evolvesTo.Length > 0;
-		evToLabel.gameObject.SetActive (hasTo);
+		evToLabel.SetActive (hasTo);
 		evToText.gameObject.SetActive (hasTo);
 		if (hasTo) {
 			evToText.text = string.Join (CardListItem.evolvesSep, info.evolvesTo);
@@ -156,7 +158,7 @@ public class DetailedView : MonoBehaviour {
 
 		// rules
 		bool hasRules = info.rules != null && info.rules.Length > 0;
-		ruleLabel.gameObject.SetActive (hasRules);
+		ruleLabel.SetActive (hasRules);
 		ruleText.gameObject.SetActive (hasRules);
 		if (hasRules) {
 			ruleText.text = string.Join ("\n", info.rules);
@@ -164,7 +166,7 @@ public class DetailedView : MonoBehaviour {
 
 		// rules
 		bool hasFlavor = !string.IsNullOrEmpty (info.flavorText);
-		flavorLabel.gameObject.SetActive (hasFlavor);
+		flavorLabel.SetActive (hasFlavor);
 		flavorText.gameObject.SetActive (hasFlavor);
 		if (hasFlavor) {
 			flavorText.text = info.flavorText;
@@ -177,6 +179,15 @@ public class DetailedView : MonoBehaviour {
 				if (lastImageUrl.Equals (CardList.callbackImageUrl)) SetImage (s);
 			});
 		}
+
+		// transfer button
+		transferButton.onClick.RemoveAllListeners ();
+		transferButton.onClick.AddListener (() => {
+
+			if (!DeckManager.Me) return;
+			DeckManager.Me.cardsToTransfer = new Cards.CardInfo[] { info };
+			DeckManager.Me.PromptTransfer ();
+		});
 	}
 
 	public void ToggleScaleUp () {

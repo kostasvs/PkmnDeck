@@ -23,6 +23,11 @@ public class DeckManager : MonoBehaviour {
 	public float warnDur = 3f;
 	private Sequence newDeckWarnSeq;
 
+	public InputField newDeckNameInput2;
+	public CanvasGroup newDeckWarn2;
+	private Text newDeckWarnText2;
+	private Sequence newDeckWarnSeq2;
+
 	public readonly List<Deck> decks = new List<Deck> ();
 
 	private Deck deckToRename;
@@ -37,6 +42,13 @@ public class DeckManager : MonoBehaviour {
 	public DialogBox deleteDeckDialog;
 	public Text deleteDeckText;
 
+	public Cards.CardInfo[] cardsToTransfer;
+	private Deck deckToTransferTo;
+	public ButtonList transferDecksList;
+	public Text transferDecksText;
+	public DialogBox transferDeckDialog;
+	public DialogBox transferConfirmDialog;
+
 	void Awake () {
 
 		Me = this;
@@ -44,6 +56,7 @@ public class DeckManager : MonoBehaviour {
 		allCardsText = curDeckText.text;
 
 		newDeckWarnText = newDeckWarn.GetComponentInChildren<Text> ();
+		newDeckWarnText2 = newDeckWarn2.GetComponentInChildren<Text> ();
 		renameDeckWarnText = renameDeckWarn.GetComponentInChildren<Text> ();
 	}
 
@@ -57,6 +70,7 @@ public class DeckManager : MonoBehaviour {
 			
 			CardList.Me.filterDeck = deck;
 			curDeckText.text = deck != null ? deck.Name : allCardsText;
+			CardList.Me.CreateDuplicates ();
 			CardList.Me.UpdateFilters ();
 		}
 		selectDeckDialog.CloseMe ();
@@ -67,14 +81,30 @@ public class DeckManager : MonoBehaviour {
 		if (Input.GetKeyDown (KeyCode.Return)) RequestCreateDeck ();
 	}
 
+	public void OnEndEditCreateDeckFromTransfer () {
+
+		if (Input.GetKeyDown (KeyCode.Return)) RequestCreateDeckFromTransfer ();
+	}
+
 	public void RequestCreateDeck () {
 
-		var dname = newDeckNameInput.text.Trim ();
+		MyRequestCreateDeck (false);
+	}
+
+	public void RequestCreateDeckFromTransfer () {
+
+		MyRequestCreateDeck (true);
+	}
+
+	public void MyRequestCreateDeck (bool fromTransfer) {
+
+		var inp = fromTransfer ? newDeckNameInput2 : newDeckNameInput;
+		var dname = inp.text.Trim ();
 
 		// check non-empty name
 		if (string.IsNullOrEmpty (dname)) {
 
-			WarnOnCreateDeck ("Please enter a name.");
+			WarnOnCreateDeck ("Please enter a name.", fromTransfer);
 			return;
 		}
 
@@ -82,14 +112,14 @@ public class DeckManager : MonoBehaviour {
 		foreach (var d in decks) {
 			if (d.Name.Equals (dname)) {
 
-				WarnOnCreateDeck ("A deck with this name already exists.");
+				WarnOnCreateDeck ("A deck with this name already exists.", fromTransfer);
 				return;
 			}
 		}
 
 		// create deck
 		AddDeck (dname);
-		newDeckNameInput.text = string.Empty;
+		inp.text = string.Empty;
 	}
 
 	private Deck AddDeck (string name) {
@@ -113,6 +143,13 @@ public class DeckManager : MonoBehaviour {
 		btns[0].onClick.AddListener (() => RequestSetDeck (d));
 		btns[1].onClick.AddListener (() => PromptRenameDeck (d));
 		btns[2].onClick.AddListener (() => PromptDeleteDeck (d));
+
+		// add to transfer deck list
+		if (transferDecksList.gameObject.activeInHierarchy) {
+
+			transferDecksList.AddButton (name, () => TransferCardsToDeck (d, true));
+			UpdateTransferText ();
+		}
 
 		return d;
 	}
@@ -167,24 +204,35 @@ public class DeckManager : MonoBehaviour {
 		renameDeckDialog.CloseMe ();
 	}
 
-	private void WarnOnCreateDeck (string text) {
+	private void WarnOnCreateDeck (string text, bool fromTransfer) {
 
-		if (newDeckWarnSeq != null && newDeckWarnSeq.IsActive () && newDeckWarnSeq.IsPlaying ()) {
-			newDeckWarnSeq.Complete ();
+		var seq = fromTransfer ? newDeckWarnSeq2 : newDeckWarnSeq;
+		if (seq != null && seq.IsActive () && seq.IsPlaying ()) {
+			seq.Complete ();
 		}
-		newDeckWarn.gameObject.SetActive (true);
-		newDeckWarn.alpha = 0f;
+		var warn = fromTransfer ? newDeckWarn2 : newDeckWarn;
+		warn.gameObject.SetActive (true);
+		warn.alpha = 0f;
 
-		newDeckWarnSeq = DOTween.Sequence ();
-		newDeckWarnSeq.Append (DOTween.To (
-				() => newDeckWarn.alpha, x => newDeckWarn.alpha = x, 1f, DialogBox.fadeDur))
+		if (fromTransfer) {
+			newDeckWarnSeq2 = DOTween.Sequence ();
+			seq = newDeckWarnSeq2;
+		}
+		else {
+			newDeckWarnSeq = DOTween.Sequence ();
+			seq = newDeckWarnSeq;
+		}
+
+		seq.Append (DOTween.To (
+				() => warn.alpha, x => warn.alpha = x, 1f, DialogBox.fadeDur))
 			.AppendInterval (warnDur)
 			.Append (DOTween.To (
-				() => newDeckWarn.alpha, x => newDeckWarn.alpha = x, 0f, DialogBox.fadeDur))
-			.OnComplete (() => newDeckWarn.gameObject.SetActive (false));
-		newDeckWarnSeq.Play ();
+				() => warn.alpha, x => warn.alpha = x, 0f, DialogBox.fadeDur))
+			.OnComplete (() => warn.gameObject.SetActive (false));
+		seq.Play ();
 
-		newDeckWarnText.text = text;
+		var t = fromTransfer ? newDeckWarnText2 : newDeckWarnText;
+		t.text = text;
 	}
 
 	private void WarnOnRenameDeck (string text) {
@@ -263,5 +311,63 @@ public class DeckManager : MonoBehaviour {
 
 			if (countLabel) countLabel.text = cardIds.Count + cardsCountSuffix;
 		}
+	}
+
+	public void PromptTransfer () {
+
+		if (transferDeckDialog.gameObject.activeSelf || 
+			cardsToTransfer == null || cardsToTransfer.Length == 0) return;
+
+		transferDecksList.ClearList ();
+		foreach (var d in decks) {
+			var dd = d;
+			transferDecksList.AddButton (dd.Name, () => TransferCardsToDeck (dd, true));
+		}
+
+		UpdateTransferText ();
+		transferDeckDialog.OpenMe ();
+	}
+
+	private void UpdateTransferText () {
+
+		if (decks.Count == 0) {
+			transferDecksText.text = "You haven't created any decks yet. " +
+				"Enter a deck name below, and press \"Create\".";
+		}
+		else transferDecksText.text = cardsToTransfer.Length == 1 ?
+			"Add this card to deck:" :
+			"Add these " + cardsToTransfer.Length + " cards to deck:";
+	}
+
+	public void ConfirmDeckTransfer () {
+
+		TransferCardsToDeck (deckToTransferTo, false);
+	}
+
+	private void TransferCardsToDeck (Deck toDeck, bool askFirst) {
+
+		if (cardsToTransfer == null || cardsToTransfer.Length == 0 ||
+			toDeck == null) return;
+
+		deckToTransferTo = toDeck;
+
+		if (askFirst) {
+			foreach (var c in cardsToTransfer) {
+				if (deckToTransferTo.cardIds.Contains (c.id)) {
+					transferConfirmDialog.OpenMe ();
+					return;
+				}
+			}
+		}
+
+		foreach (var c in cardsToTransfer) {
+			deckToTransferTo.cardIds.Add (c.id);
+		}
+		deckToTransferTo.UpdateCountLabel ();
+
+		cardsToTransfer = null;
+		deckToTransferTo = null;
+		transferDeckDialog.CloseMe ();
+		transferConfirmDialog.CloseMe ();
 	}
 }

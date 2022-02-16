@@ -31,6 +31,8 @@ public class CardListItem : MonoBehaviour {
 
 	public CardListItem siblingItem;
 
+	public bool isDuplicate;
+
 	void Start () {
 
 		thumbTr = thumbnail.transform;

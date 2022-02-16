@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+using System.Linq;
 
 public class CardList : MonoBehaviour {
 
@@ -160,7 +161,7 @@ public class CardList : MonoBehaviour {
 		SortCards (FilterSort.sorting);
 	}
 
-	private void AddCard (Cards.CardInfo info) {
+	private CardListItem AddCard (Cards.CardInfo info) {
 
 		// grid
 		var go = Instantiate (gridItemTemplate.gameObject, gridItemTemplate.transform.parent);
@@ -191,6 +192,44 @@ public class CardList : MonoBehaviour {
 		// set siblings
 		cli1.siblingItem = cli2;
 		cli2.siblingItem = cli1;
+
+		return cli1;
+	}
+
+	private void DeleteDuplicates () {
+
+		var markForDelete = new HashSet<CardListItem> ();
+		foreach (var c in listItems) {
+			if (c.isDuplicate) markForDelete.Add (c);
+		}
+		listItems.RemoveAll (c => markForDelete.Contains (c));
+		gridItems.RemoveAll (c => markForDelete.Contains (c.siblingItem));
+		foreach (var c in markForDelete) {
+			Destroy (c.gameObject);
+			Destroy (c.siblingItem.gameObject);
+		}
+	}
+
+	public void CreateDuplicates () {
+
+		DeleteDuplicates ();
+
+		if (filterDeck == null) return;
+
+		var markForDuplicate = new List<CardListItem> ();
+		
+		foreach (var c in listItems) {
+			int n = filterDeck.cardIds.Count (x => x.Equals (c.info.id));
+			for (int i = 1; i < n; i++) {
+				markForDuplicate.Add (c);
+			}
+		}
+
+		foreach (var c in markForDuplicate) {
+			var dup = AddCard (c.info);
+			dup.isDuplicate = c;
+			if (dup.siblingItem) dup.siblingItem.isDuplicate = c.siblingItem;
+		}
 	}
 
 	public void UpdateFilters () {
