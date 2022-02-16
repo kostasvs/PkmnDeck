@@ -13,6 +13,7 @@ public class DeckManager : MonoBehaviour {
 	public DialogBox selectDeckDialog;
 
 	public Text allCardsCount;
+	private const string cardsCountSingular = "1 card";
 	private const string cardsCountSuffix = " cards";
 
 	public GameObject deckListingTemplate;
@@ -309,7 +310,8 @@ public class DeckManager : MonoBehaviour {
 
 		public void UpdateCountLabel () {
 
-			if (countLabel) countLabel.text = cardIds.Count + cardsCountSuffix;
+			if (countLabel) countLabel.text = cardIds.Count == 1 ? 
+					cardsCountSingular : cardIds.Count + cardsCountSuffix;
 		}
 	}
 
@@ -364,6 +366,13 @@ public class DeckManager : MonoBehaviour {
 			deckToTransferTo.cardIds.Add (c.id);
 		}
 		deckToTransferTo.UpdateCountLabel ();
+
+		if (cardsToTransfer.Length == 1) {
+			NotifToast.ShowToast ("Added \"" + cardsToTransfer[0].name + "\" to deck \"" + 
+				deckToTransferTo.Name +"\".");
+		}
+		else NotifToast.ShowToast ("Added " + cardsToTransfer.Length + " cards to deck \"" +
+				deckToTransferTo.Name + "\".");
 
 		cardsToTransfer = null;
 		deckToTransferTo = null;
