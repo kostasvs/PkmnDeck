@@ -7,6 +7,7 @@ public class DetailedView : MonoBehaviour {
 
 	private DialogBox dialog;
 
+	private Cards.CardInfo cardInfo;
 	public RectTransform viewContent;
 
 	public RectTransform boxRtr;
@@ -51,7 +52,7 @@ public class DetailedView : MonoBehaviour {
 
 	private string lastImageUrl;
 
-	public Button transferButton;
+	public Button removeButton;
 
 	private void Awake () {
 
@@ -65,6 +66,8 @@ public class DetailedView : MonoBehaviour {
 	}
 
 	public void ShowInfo (Cards.CardInfo info) {
+
+		cardInfo = info;
 
 		if (!dialog) dialog = GetComponent<DialogBox> ();
 		dialog.OpenMe ();
@@ -179,14 +182,8 @@ public class DetailedView : MonoBehaviour {
 			});
 		}
 
-		// transfer button
-		transferButton.onClick.RemoveAllListeners ();
-		transferButton.onClick.AddListener (() => {
-
-			if (!DeckManager.Me) return;
-			DeckManager.Me.cardsToTransfer = new Cards.CardInfo[] { info };
-			DeckManager.Me.PromptTransfer ();
-		});
+		// button
+		removeButton.gameObject.SetActive (CardList.Me.filterDeck != null);
 	}
 
 	public void ToggleScaleUp () {
@@ -204,5 +201,19 @@ public class DetailedView : MonoBehaviour {
 		seq.Play ();
 
 		isScaledUp = !isScaledUp;
+	}
+
+	public void AddToDeck () {
+
+		if (!DeckManager.Me) return;
+		DeckManager.Me.cardsToTransfer = new Cards.CardInfo[] { cardInfo };
+		DeckManager.Me.PromptTransfer ();
+	}
+
+	public void RemoveFromDeck () {
+
+		if (!gameObject.activeSelf || cardInfo == null || !DeckManager.Me) return;
+		DeckManager.Me.RemoveCardFromDeck (cardInfo);
+		dialog.CloseMe ();
 	}
 }

@@ -131,9 +131,11 @@ public class DeckManager : MonoBehaviour {
 		// create deck
 		AddDeck (dname);
 		inp.text = string.Empty;
+		
+		DeckPersistence.SaveDecks ();
 	}
 
-	private Deck AddDeck (string name) {
+	public Deck AddDeck (string name) {
 
 		// create object
 		var d = new Deck (name);
@@ -279,6 +281,7 @@ public class DeckManager : MonoBehaviour {
 			Destroy (deckToDelete.listing);
 			decks.Remove (deckToDelete);
 		}
+		DeckPersistence.SaveDecks ();
 
 		deleteDeckDialog.CloseMe ();
 	}
@@ -311,6 +314,7 @@ public class DeckManager : MonoBehaviour {
 			if (CardList.Me && CardList.Me.filterDeck == this) {
 				Me.curDeckText.text = name;
 			}
+			DeckPersistence.SaveDecks ();
 		}
 
 		public void UpdateNameLabel () {
@@ -388,6 +392,8 @@ public class DeckManager : MonoBehaviour {
 		deckToTransferTo = null;
 		transferDeckDialog.CloseMe ();
 		transferConfirmDialog.CloseMe ();
+
+		DeckPersistence.SaveDecks ();
 	}
 
 	public void ToggleSelectMode () {
@@ -469,12 +475,33 @@ public class DeckManager : MonoBehaviour {
 		CardList.Me.UpdateFilters ();
 		deck.UpdateCountLabel ();
 		SetSelectMode (false);
-		
+
+		DeckPersistence.SaveDecks ();
+
 		if (cnt == 1) {
 			NotifToast.ShowToast ("Removed \"" + remName + "\" from deck \"" +
 				deck.Name + "\".");
 		}
 		else NotifToast.ShowToast ("Removed " + cnt + " cards from deck \"" +
+				deck.Name + "\".");
+	}
+
+	public void RemoveCardFromDeck (Cards.CardInfo cardInfo) {
+
+		if (CardList.Me.filterDeck == null) return;
+
+		var deck = CardList.Me.filterDeck;
+
+		deck.cardIds.Remove (cardInfo.id);
+
+		CardList.Me.CreateDuplicates ();
+		CardList.Me.UpdateFilters ();
+		deck.UpdateCountLabel ();
+		SetSelectMode (false);
+
+		DeckPersistence.SaveDecks ();
+
+		NotifToast.ShowToast ("Removed \"" + cardInfo.name + "\" from deck \"" +
 				deck.Name + "\".");
 	}
 }
